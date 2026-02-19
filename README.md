@@ -1,5 +1,7 @@
 # Oscar Short Film Predictor
 
+https://bestshortfilmpredicition.netlify.app/
+
 A novel statistical model for predicting the **Academy Award for Best Live Action Short Film** — the one Oscar category that Ben Zauzmer and other prediction models explicitly skip due to lack of data.
 
 ## Background
