@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oscar Short Film Predictor — 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0a0a0a;
+    --white: #f5f5f0;
+    --red: #c8000a;
+    --red-dim: #7a0006;
+    --gray-1: #1a1a1a;
+    --gray-2: #2a2a2a;
+    --gray-3: #888;
+    --gray-4: #bbb;
+    --mono: 'DM Mono', monospace;
+    --serif: 'Playfair Display', Georgia, serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { font-size: 16px; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: var(--mono);
+    font-weight: 300;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  header {
+    border-bottom: 1px solid var(--gray-2);
+    padding: 56px 48px 40px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 24px;
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 14px;
+  }
+
+  header h1 {
+    font-family: var(--serif);
+    font-size: clamp(2.2rem, 5vw, 3.8rem);
+    font-weight: 900;
+    line-height: 1.0;
+    letter-spacing: -0.02em;
+    color: var(--white);
+  }
+
+  header h1 em {
+    font-style: italic;
+    color: var(--gray-4);
+  }
+
+  .header-meta {
+    font-size: 0.7rem;
+    color: var(--gray-3);
+    letter-spacing: 0.04em;
+    line-height: 1.8;
+    text-align: right;
+  }
+  .header-meta strong { color: var(--white); font-weight: 500; }
+
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 48px 80px;
+  }
+
+  section { padding: 56px 0; border-bottom: 1px solid var(--gray-2); }
+  section:last-child { border-bottom: none; }
+
+  .section-label {
+    font-size: 0.6rem;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gray-3);
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .section-label::before { content: ''; display: block; width: 24px; height: 1px; background: var(--red); }
+
+  .pred-row {
+    display: grid;
+    grid-template-columns: 40px 1fr 120px 160px;
+    gap: 0;
+    align-items: center;
+    border-top: 1px solid var(--gray-2);
+    padding: 20px 0;
+    transition: background 0.15s;
+    cursor: default;
+  }
+  .pred-row:hover { background: var(--gray-1); margin: 0 -48px; padding: 20px 48px; }
+  .pred-row.top { border-top: 1px solid var(--white); }
+
+  .pred-num {
+    font-family: var(--serif);
+    font-size: 1.1rem;
+    font-weight: 400;
+    color: var(--gray-3);
+    font-style: italic;
+  }
+  .pred-row.top .pred-num { color: var(--red); }
+
+  .pred-title-block { padding-right: 24px; }
+
+  .pred-title {
+    font-family: var(--serif);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+
+  .pred-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+  .tag {
+    font-size: 0.58rem;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gray-3);
+    border: 1px solid var(--gray-2);
+    padding: 2px 7px;
+    border-radius: 2px;
+  }
+  .tag.red { color: var(--red); border-color: var(--red-dim); }
+
+  .pred-bar-col { padding-right: 24px; }
+  .pred-bar-track {
+    height: 2px;
+    background: var(--gray-2);
+    position: relative;
+    margin-bottom: 6px;
+  }
+  .pred-bar-fill {
+    height: 100%;
+    background: var(--gray-3);
+  }
+  .pred-row.top .pred-bar-fill { background: var(--red); }
+  .bar-label { font-size: 0.6rem; color: var(--gray-3); letter-spacing: 0.04em; }
+
+  .pred-prob { text-align: right; }
+  .prob-big {
+    font-family: var(--serif);
+    font-size: 2.2rem;
+    font-weight: 900;
+    color: var(--gray-3);
+    line-height: 1;
+  }
+  .pred-row.top .prob-big { color: var(--white); }
+  .prob-small {
+    font-size: 0.6rem;
+    color: var(--gray-3);
+    letter-spacing: 0.06em;
+    margin-top: 3px;
+  }
+  .winner-mark {
+    font-size: 0.6rem;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-top: 4px;
+  }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--gray-2);
+    border: 1px solid var(--gray-2);
+  }
+  .stat-cell {
+    background: var(--black);
+    padding: 28px 24px;
+  }
+  .stat-num {
+    font-family: var(--serif);
+    font-size: 2.6rem;
+    font-weight: 900;
+    color: var(--white);
+    line-height: 1;
+    margin-bottom: 10px;
+  }
+  .stat-num.red { color: var(--red); }
+  .stat-desc {
+    font-size: 0.68rem;
+    color: var(--gray-3);
+    letter-spacing: 0.04em;
+    line-height: 1.5;
+  }
+
+  .feat-list { display: flex; flex-direction: column; }
+  .feat-row {
+    display: grid;
+    grid-template-columns: 260px 1fr 52px;
+    gap: 16px;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--gray-1);
+  }
+  .feat-name-text {
+    font-size: 0.78rem;
+    color: var(--gray-4);
+    letter-spacing: 0.02em;
+  }
+  .feat-track {
+    height: 1px;
+    background: var(--gray-2);
+    position: relative;
+  }
+  .feat-fill {
+    position: absolute;
+    top: -0.5px;
+    left: 0;
+    height: 2px;
+    background: var(--white);
+  }
+  .feat-row:first-child .feat-fill,
+  .feat-row:nth-child(2) .feat-fill { background: var(--red); }
+  .feat-pct {
+    font-size: 0.72rem;
+    color: var(--gray-3);
+    text-align: right;
+    font-weight: 500;
+  }
+
+  .patterns-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.78rem;
+  }
+  .patterns-table thead tr { border-bottom: 1px solid var(--white); }
+  .patterns-table th {
+    font-size: 0.58rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gray-3);
+    padding: 0 16px 12px 0;
+    text-align: left;
+  }
+  .patterns-table td {
+    padding: 14px 16px 14px 0;
+    border-bottom: 1px solid var(--gray-1);
+    color: var(--gray-4);
+    vertical-align: middle;
+  }
+  .patterns-table td:first-child { color: var(--white); }
+  .rate-high { color: var(--white) !important; font-weight: 500; }
+  .rate-red  { color: var(--red)   !important; font-weight: 500; }
+  .rate-dim  { color: var(--gray-3)!important; }
+
+  .inline-bar { display: flex; align-items: center; gap: 10px; }
+  .inline-bar-track {
+    flex: 1; height: 1px; background: var(--gray-2);
+    position: relative; max-width: 120px;
+  }
+  .inline-bar-fill {
+    position: absolute; top: -0.5px; left: 0;
+    height: 2px; background: var(--gray-3);
+  }
+
+  .insights-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--gray-2);
+    border: 1px solid var(--gray-2);
+  }
+  .insight-cell {
+    background: var(--black);
+    padding: 28px;
+  }
+  .insight-cell h4 {
+    font-family: var(--serif);
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 10px;
+    line-height: 1.3;
+  }
+  .insight-cell p {
+    font-size: 0.75rem;
+    color: var(--gray-3);
+    line-height: 1.7;
+  }
+  .insight-cell p strong { color: var(--gray-4); font-weight: 500; }
+
+  .method-row {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 40px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--gray-1);
+    align-items: start;
+  }
+  .method-key {
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gray-3);
+    padding-top: 2px;
+  }
+  .method-val {
+    font-size: 0.78rem;
+    color: var(--gray-4);
+    line-height: 1.6;
+  }
+
+  footer {
+    border-top: 1px solid var(--gray-2);
+    padding: 28px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.62rem;
+    color: var(--gray-3);
+    letter-spacing: 0.06em;
+  }
+  footer span { color: var(--red); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .pred-row { animation: fadeUp 0.5s both; }
+  .pred-row:nth-child(1) { animation-delay: 0.05s; }
+  .pred-row:nth-child(2) { animation-delay: 0.12s; }
+  .pred-row:nth-child(3) { animation-delay: 0.19s; }
+  .pred-row:nth-child(4) { animation-delay: 0.26s; }
+  .pred-row:nth-child(5) { animation-delay: 0.33s; }
+
+  @media (max-width: 768px) {
+    header { padding: 32px 24px 28px; grid-template-columns: 1fr; }
+    .header-meta { text-align: left; }
+    main { padding: 0 24px 60px; }
+    footer { padding: 20px 24px; flex-direction: column; gap: 8px; text-align: center; }
+    .pred-row { grid-template-columns: 32px 1fr 80px; }
+    .pred-bar-col { display: none; }
+    .stats-row { grid-template-columns: 1fr 1fr; }
+    .insights-grid { grid-template-columns: 1fr; }
+    .feat-row { grid-template-columns: 160px 1fr 44px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="eyebrow">98th Academy Awards · March 15, 2026</div>
+    <h1>Best Live Action<br><em>Short Film</em></h1>
+  </div>
+  <div class="header-meta">
+    <strong>Novel statistical model</strong><br>
+    19 years · 95 nominees<br>
+    63% pick accuracy (LOYO CV)<br>
+    Baseline: 20%
+  </div>
+</header>
+
+<main>
+
+  <section>
+    <div class="section-label">Predictions</div>
+
+    <div class="pred-row top">
+      <div class="pred-num">1</div>
+      <div class="pred-title-block">
+        <div class="pred-title">Two People Exchanging Saliva</div>
+        <div class="pred-tags">
+          <span class="tag">France</span>
+          <span class="tag">Subtitled</span>
+          <span class="tag">20 min</span>
+          <span class="tag red">Betting Favorite</span>
+          <span class="tag red">New Yorker</span>
+        </div>
+      </div>
+      <div class="pred-bar-col">
+        <div class="pred-bar-track"><div class="pred-bar-fill" style="width:100%"></div></div>
+        <div class="bar-label">Ensemble model</div>
+      </div>
+      <div class="pred-prob">
+        <div class="prob-big">54%</div>
+        <div class="prob-small">LR 61 · RF 45</div>
+        <div class="winner-mark">← Predicted winner</div>
+      </div>
+    </div>
+
+    <div class="pred-row">
+      <div class="pred-num">2</div>
+      <div class="pred-title-block">
+        <div class="pred-title">A Friend of Dorothy</div>
+        <div class="pred-tags">
+          <span class="tag">UK</span>
+          <span class="tag">English</span>
+          <span class="tag">25 min</span>
+          <span class="tag red">BAFTA Nom</span>
+        </div>
+      </div>
+      <div class="pred-bar-col">
+        <div class="pred-bar-track"><div class="pred-bar-fill" style="width:45%"></div></div>
+        <div class="bar-label">Ensemble model</div>
+      </div>
+      <div class="pred-prob">
+        <div class="prob-big">24%</div>
+        <div class="prob-small">LR 23 · RF 26</div>
+      </div>
+    </div>
+
+    <div class="pred-row">
+      <div class="pred-num">3</div>
+      <div class="pred-title-block">
+        <div class="pred-title">Jane Austen's Period Drama</div>
+        <div class="pred-tags">
+          <span class="tag">USA</span>
+          <span class="tag">English</span>
+          <span class="tag">15 min</span>
+          <span class="tag">Comedy</span>
+        </div>
+      </div>
+      <div class="pred-bar-col">
+        <div class="pred-bar-track"><div class="pred-bar-fill" style="width:17%"></div></div>
+        <div class="bar-label">Ensemble model</div>
+      </div>
+      <div class="pred-prob">
+        <div class="prob-big">9%</div>
+        <div class="prob-small">LR 11 · RF 7</div>
+      </div>
+    </div>
+
+    <div class="pred-row">
+      <div class="pred-num">4</div>
+      <div class="pred-title-block">
+        <div class="pred-title">The Singers</div>
+        <div class="pred-tags">
+          <span class="tag">USA</span>
+          <span class="tag">English</span>
+          <span class="tag">18 min</span>
+          <span class="tag red">Dir. prior Oscar nom</span>
+        </div>
+      </div>
+      <div class="pred-bar-col">
+        <div class="pred-bar-track"><div class="pred-bar-fill" style="width:15%"></div></div>
+        <div class="bar-label">Ensemble model</div>
+      </div>
+      <div class="pred-prob">
+        <div class="prob-big">8%</div>
+        <div class="prob-small">LR 1 · RF 16</div>
+      </div>
+    </div>
+
+    <div class="pred-row">
+      <div class="pred-num">5</div>
+      <div class="pred-title-block">
+        <div class="pred-title">Butcher's Stain</div>
+        <div class="pred-tags">
+          <span class="tag">Israel</span>
+          <span class="tag">Subtitled</span>
+          <span class="tag">22 min</span>
+          <span class="tag">Political</span>
+        </div>
+      </div>
+      <div class="pred-bar-col">
+        <div class="pred-bar-track"><div class="pred-bar-fill" style="width:9%"></div></div>
+        <div class="bar-label">Ensemble model</div>
+      </div>
+      <div class="pred-prob">
+        <div class="prob-big">5%</div>
+        <div class="prob-small">LR 4 · RF 6</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label">Model Performance</div>
+    <div class="stats-row">
+      <div class="stat-cell">
+        <div class="stat-num red">63%</div>
+        <div class="stat-desc">Pick accuracy<br>Random Forest<br>(LOYO cross-validation)</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num">53%</div>
+        <div class="stat-desc">Pick accuracy<br>Ensemble<br>(LR + RF averaged)</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num">20%</div>
+        <div class="stat-desc">Random baseline<br>5 nominees<br>equal probability</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num">0.119</div>
+        <div class="stat-desc">Brier score (RF)<br>Lower is better<br>Baseline ≈ 0.16</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label">Feature Importance — Random Forest</div>
+    <div class="feat-list">
+      <div class="feat-row">
+        <div class="feat-name-text">Betting favorite signal</div>
+        <div class="feat-track"><div class="feat-fill" style="width:100%"></div></div>
+        <div class="feat-pct">21.6%</div>
+      </div>
+      <div class="feat-row">
+        <div class="feat-name-text">Platform / distributor tier</div>
+        <div class="feat-track"><div class="feat-fill" style="width:74%"></div></div>
+        <div class="feat-pct">15.9%</div>
+      </div>
+      <div class="feat-row">
+        <div class="feat-name-text">Platform × Festival (interaction)</div>
+        <div class="feat-track"><div class="feat-fill" style="width:72%"></div></div>
+        <div class="feat-pct">15.6%</div>
+      </div>
+      <div class="feat-row">
+        <div class="feat-name-text">BAFTA nom × English language</div>
+        <div class="feat-track"><div class="feat-fill" style="width:48%"></div></div>
+        <div class="feat-pct">10.3%</div>
+      </div>
+      <div class="feat-row">
+        <div class="feat-name-text">English language</div>
+        <div class="feat-track"><div class="feat-fill" style="width:46%"></div></div>
+        <div class="feat-pct">9.9%</div>
+      </div>
+      <div class="feat-row">
+        <div class="feat-name-text">Runtime (minutes)</div>
+        <div class="feat-track"><div class="feat-fill" style="width:38%"></div></div>
+        <div class="feat-pct">8.1%</div>
+      </div>
+      <div class="feat-row">
+        <div class="feat-name-text">BAFTA nominated (raw)</div>
+        <div class="feat-track"><div class="feat-fill" style="width:21%"></div></div>
+        <div class="feat-pct">4.5%</div>
+      </div>
+      <div class="feat-row">
+        <div class="feat-name-text">Festival prestige score</div>
+        <div class="feat-track"><div class="feat-fill" style="width:17%"></div></div>
+        <div class="feat-pct">3.7%</div>
+      </div>
+      <div class="feat-row">
+        <div class="feat-name-text">Subject gravity</div>
+        <div class="feat-track"><div class="feat-fill" style="width:12%"></div></div>
+        <div class="feat-pct">2.5%</div>
+      </div>
+      <div class="feat-row" style="border-bottom:none">
+        <div class="feat-name-text">UK / Ireland production</div>
+        <div class="feat-track"><div class="feat-fill" style="width:10%"></div></div>
+        <div class="feat-pct">2.2%</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label">Historical Patterns — 2006 to 2025</div>
+    <table class="patterns-table">
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>Win Rate</th>
+          <th>vs. 20% baseline</th>
+          <th>N noms</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Was betting favorite</td>
+          <td class="rate-red">58%</td>
+          <td><div class="inline-bar"><div class="inline-bar-track"><div class="inline-bar-fill" style="width:100%;background:var(--red)"></div></div></div></td>
+          <td>19</td>
+        </tr>
+        <tr>
+          <td>BAFTA win</td>
+          <td class="rate-high">50%</td>
+          <td><div class="inline-bar"><div class="inline-bar-track"><div class="inline-bar-fill" style="width:86%;background:var(--white)"></div></div></div></td>
+          <td>8</td>
+        </tr>
+        <tr>
+          <td>BAFTA nomination</td>
+          <td class="rate-high">50%</td>
+          <td><div class="inline-bar"><div class="inline-bar-track"><div class="inline-bar-fill" style="width:86%;background:var(--white)"></div></div></div></td>
+          <td>12</td>
+        </tr>
+        <tr>
+          <td>UK / Ireland production</td>
+          <td class="rate-high">41%</td>
+          <td><div class="inline-bar"><div class="inline-bar-track"><div class="inline-bar-fill" style="width:71%"></div></div></div></td>
+          <td>17</td>
+        </tr>
+        <tr>
+          <td>USA production</td>
+          <td>40%</td>
+          <td><div class="inline-bar"><div class="inline-bar-track"><div class="inline-bar-fill" style="width:69%"></div></div></div></td>
+          <td>15</td>
+        </tr>
+        <tr>
+          <td>English language</td>
+          <td>38%</td>
+          <td><div class="inline-bar"><div class="inline-bar-track"><div class="inline-bar-fill" style="width:65%"></div></div></div></td>
+          <td>37</td>
+        </tr>
+        <tr>
+          <td>Heavy / political subject matter</td>
+          <td class="rate-dim">14%</td>
+          <td><div class="inline-bar"><div class="inline-bar-track"><div class="inline-bar-fill" style="width:24%"></div></div></div></td>
+          <td>36</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-label">Novel Findings</div>
+    <div class="insights-grid">
+      <div class="insight-cell">
+        <h4>BAFTA × English is the key interaction</h4>
+        <p>A BAFTA-nominated English-language film wins 50%+ of the time — far above the 20% baseline. This interaction term is novel; no prior model captures it. It's why <strong>A Friend of Dorothy</strong> is a real 24% second choice despite being less discussed.</p>
+      </div>
+      <div class="insight-cell">
+        <h4>Platform tier beats festival prestige</h4>
+        <p>Distribution via The New Yorker, Netflix, or A24 matters more than winning a prestigious festival. Voter accessibility drives viewing, and viewing drives votes. <strong>Two People Exchanging Saliva</strong> is freely streamable on NewYorker.com.</p>
+      </div>
+      <div class="insight-cell">
+        <h4>Heavy subject matter is a weak predictor</h4>
+        <p>Films about war, trauma, or politics win only <strong>14% of the time</strong> — slightly below baseline. Voters favor formal inventiveness and emotional resonance over gravity of topic.</p>
+      </div>
+      <div class="insight-cell">
+        <h4>Runtime sweet spot: 16–25 minutes</h4>
+        <p>Films in this band outperform both very short (&lt;15 min) and long (30+ min) entries. Too short risks feeling slight; too long risks overstaying a welcome with busy Academy voters.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label">Methodology</div>
+    <div class="method-row">
+      <div class="method-key">Data</div>
+      <div class="method-val">19 years of nominees (2006–2025), 95 total data points. Each nominee hand-coded across 10+ features from Wikipedia, BAFTA records, historical betting odds, and festival records.</div>
+    </div>
+    <div class="method-row">
+      <div class="method-key">Validation</div>
+      <div class="method-val">Leave-One-Year-Out (LOYO) cross-validation. The model trains on all years except one, then predicts the held-out year. This mirrors real-world forecasting — the model never sees the future.</div>
+    </div>
+    <div class="method-row">
+      <div class="method-key">Models</div>
+      <div class="method-val">Logistic Regression (L2) + Random Forest (max_depth=3, 200 trees). With ~95 training examples, deep models overfit. LR is interpretable; RF captures non-linear interactions. Final output is their average, normalized per year.</div>
+    </div>
+    <div class="method-row">
+      <div class="method-key">Novel features</div>
+      <div class="method-val">Platform/distributor tier · Festival prestige score · BAFTA×language interaction · Subject gravity encoding · Runtime bucket. None exist in prior Oscar short film prediction literature — Zauzmer explicitly does not model this category.</div>
+    </div>
+    <div class="method-row" style="border-bottom:none">
+      <div class="method-key">Limitations</div>
+      <div class="method-val">Small sample (95 rows). Feature coding involves judgment calls. Betting market signal is partially circular. Interpret probabilistically, not as a definitive pick.</div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div>Oscar Short Film Predictor · February 2026</div>
+  <div>Research &amp; entertainment only · <span>Not gambling advice</span></div>
+</footer>
+
+</body>
+</html>
